@@ -1,0 +1,66 @@
+@height:75px;
+.header{
+  height: @height;
+  background-color: #0a1122;
+  background-image: url("../../assets/title-bg.png");
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  color: #FFFFFF;
+  display: flex;
+  padding: 0 19px;
+  .headerLeft{
+    margin-top: 17px;
+    flex: 1;
+  }
+  .title{
+    font-family: Alimama ShuHeiTi;
+    font-size: 40px;
+    font-weight: normal;
+    line-height: 68px;
+    text-align: center;
+    letter-spacing: 4.4px;
+    text-shadow: 0px 4px 21px 0px rgba(27, 126, 242, 0.64);
+  }
+  .headerRight{
+    flex: 1;
+    text-align: right;
+  }
+}
+.content{
+  height: calc(100vh - @height);display: flex;
+
+  .left{
+    height: calc(100vh - @height);
+    width: 25vw;
+    .leftTop{
+      padding: 16px;
+      height: calc(100% / 3 * 2 - 32px);
+    }
+    .leftBottom{
+      padding: 16px;
+      height: calc(100% / 3 - 32px);
+    }
+  }
+  .center{
+    height: calc(100vh - @height);
+    width: 50vw;
+    .centerTop{
+      padding: 16px;
+      height: calc(100% / 2  - 32px);
+    }
+    .centerBottom{
+      padding: 16px;
+      height: calc(100% / 2  - 32px);
+      text-align: center;
+    }
+  }
+  .right{
+    height: calc(100vh - @height);
+    width: 25vw;
+    .rightHeight{
+      padding: 16px;
+      height: calc(100% / 3  - 32px);
+    }
+  }
+}

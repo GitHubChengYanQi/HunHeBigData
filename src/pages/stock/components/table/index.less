@@ -1,0 +1,46 @@
+.table {
+
+  height: 100%;
+
+  .header {
+    display: flex;
+    background-color: rgba(27, 126, 242, 0.2);
+    height: 50px;
+    line-height: 50px;
+    color: #FFFFFF;
+    font-size: 24px;
+    margin-bottom: 8px;
+
+    img {
+      height: 12.12px;
+      margin: auto 20px auto 9px;
+    }
+
+    &:before {
+      display: block;
+      content: "";
+      width: 4px;
+      height: 50px;
+      background-color: #1B7EF2;
+    }
+  }
+
+  .thead {
+    background-color: #07173D;
+    padding: 0 20px;
+    color: #6FBAFF;
+    font-size: 15px;
+
+    .theadText {
+      padding: 7px 0;
+      border-bottom: 1px solid #7B86B8;
+    }
+  }
+
+  .tbody {
+    height: calc(100% - 50px - 41px - 28px - 8px);
+    overflow: hidden;
+    padding: 16px 20px 12px 20px;
+    background: linear-gradient(0deg, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)), linear-gradient(270deg, #08163E 0%, rgba(8, 22, 62, 0.00) 99%);
+  }
+}
