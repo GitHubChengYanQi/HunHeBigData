@@ -21,6 +21,11 @@ import Count from "../count";
                     </div>
                 </div>
                 <div id="center" className={style.center} style={{flex:1}}>
+                    <div className={style.total}>
+                        <div className={style.shu}>159485</div>
+                        <div className={style.text}>库存总数</div>
+                    </div>
+
                 </div>
                 <div id="right" className={style.right} style={{flex:1}}>
                     <div className={style.long}><ShadowBox></ShadowBox></div>
