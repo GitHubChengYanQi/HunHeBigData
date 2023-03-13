@@ -1,11 +1,13 @@
-import { defineConfig } from "umi";
+import {defineConfig} from "umi";
 
 export default defineConfig({
-  history: {type:"hash"},
-  routes: [
-    { path: "/", component: "index" },
-    { path: "/docs", component: "docs" },
-    { path: "/stock", component: "stock/index" },
-  ],
-  npmClient: 'npm',
+
+    publicPath: process.env.NODE_ENV === 'production' ? './' : '/',
+    history: {type: "hash"},
+    routes: [
+        {path: "/", component: "index"},
+        {path: "/docs", component: "docs"},
+        {path: "/stock", component: "stock/index"},
+    ],
+    npmClient: 'npm',
 });
