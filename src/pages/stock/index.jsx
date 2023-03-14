@@ -12,14 +12,14 @@ import {useEffect} from "react";
 import Statistics from "./components/statistics";
 
 
-
 const Stock = (props) => {
 
-    useEffect(()=>{
+    useEffect(() => {
         const video = document.getElementById('video');
         video.src = "https://hunts-cnc.oss-cn-beijing.aliyuncs.com/upload/video/video.mp4"
         video.play();
-    },[])
+    }, [])
+
     return (
         <div>
             <div id="header" className={style.header}>
@@ -32,12 +32,12 @@ const Stock = (props) => {
             <div id="content" className={style.content}>
                 <div id="left" className={style.left}>
                     <div id="left-top" className={style.leftTop}><OutStock /></div>
-                    <div id="left-bottom" className={style.leftBottom}><Check/></div>
+                    <div id="left-bottom" className={style.leftBottom}><Check /></div>
                 </div>
                 <div id="center" className={style.center}>
-                    <div id="center-top" className={style.centerTop}><Statistics/></div>
+                    <div id="center-top" className={style.centerTop}><Statistics /></div>
                     <div id="center-bottom" className={style.centerBottom}>
-                        <video muted  id="video" style={{margin:"auto"}} autoPlay loop height="100%" src=""></video>
+                        <video muted id="video" style={{margin: "auto"}} autoPlay loop height="100%" src=""></video>
                     </div>
                 </div>
                 <div id="right" className={style.right}>

@@ -4,8 +4,14 @@ import ShadowBox from "../shadowBox";
 import style from "./index.less";
 import circle from '../../../../assets/Vector.png'
 import Count from "../count";
+import {useEffect} from "react";
 
  const Statistics = (props) => {
+
+     useEffect(()=>{
+        alert('token=>'+window.token)
+     },[])
+
     return (
         <div>
             <div style={{display:"flex"}}>
@@ -41,10 +47,10 @@ import Count from "../count";
             </div>
             <div　style={{display:"flex"}}>
                 <div style={{flex:1}}>
-                    <Count number={14987} len={6}></Count>
+                    <Count number={14987} len={4}></Count>
                 </div>
                 <div style={{flex:1}}>
-                    <Count number={14987} len={6}></Count>
+                    <Count number={14987} len={4}></Count>
                 </div>
             </div>
 
