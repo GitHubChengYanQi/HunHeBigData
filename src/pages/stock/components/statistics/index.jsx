@@ -8,10 +8,6 @@ import {useEffect} from "react";
 
  const Statistics = (props) => {
 
-     useEffect(()=>{
-        alert('token=>'+window.token)
-     },[])
-
     return (
         <div>
             <div style={{display:"flex"}}>
