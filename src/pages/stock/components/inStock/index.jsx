@@ -4,49 +4,78 @@ import Table from "../table";
 import Button from "../button";
 import Text from "../text";
 import First from "../first";
+import {UseProcess} from "MES-Apis/lib";
+import {useEffect} from "react";
+import {ErpEnums} from "MES-Apis/lib/Erp";
 
 
 const InStock = (props) => {
 
-    const dataSource = [
-        {
-            name: "张三",
-            age: "18",
-            address: "佟二堡",
-        }
-    ];
+    const {loading, data = {}, run} = UseProcess.auditList({}, {
+        manual: true
+    })
+    useEffect(() => {
+        run({
+            params: {
+                limit: 50,
+                page: 1
+            },
+            data: {type: ErpEnums.instockOrder}
+        });
+    }, [])
+
+    const dataSource = (data.data || [])
     const columns = [
         {
-            title: '姓名',
-            dataIndex: 'name',
-            key: 'name',
-            width: 80,
-            align: 'center',
-            render: (item, index) => {
-                return (<First>22</First>);
+            title: '单据信息',
+            dataIndex: 'taskName',
+            key: 'taskName',
+            align: 'left',
+            render: (item) => {
+                return (<First>{item.taskName}</First>);
             }
         },
         {
-            title: '姓名',
+            title: '入库数量',
             dataIndex: 'name',
             key: 'name1',
             align: 'center',
+            width: 130,
             render: (item, index) => {
-                return (<Text color={"#f00"}>22</Text>);
+                const receivedCount = item.receipts?.inStockNum
+                return (<Text color={"#FFE905"}>{receivedCount}</Text>);
             }
         },
         {
-            title: '年龄',
+            title: '状态',
             dataIndex: 'age',
             key: 'age',
+            width: 200,
             align: 'center',
-            render: (item, index) => {
-                return (<Button type='orange'>11</Button>);
+            render: (item) => {
+                const statusName = item.receipts?.statusName
+                let type = ''
+                switch (item.status) {
+                    case 0:
+                        type = 'blue'
+                        break;
+                    case 49:
+                        type = 'orange'
+                        break;
+                    case 50:
+                        type = 'red'
+                        break;
+                    case 99:
+                        type = 'green'
+                        break;
+                }
+                return (<Button type={type}>{statusName}</Button>);
             }
         }
     ];
+
     return (
-        <Table title="入库任务" columns={columns} dataSource={dataSource}/>
+        <Table title="入库任务" loading={loading} columns={columns} dataSource={dataSource}/>
     );
 };
 export default InStock;

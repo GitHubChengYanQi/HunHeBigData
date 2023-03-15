@@ -20,10 +20,6 @@ const Stock = (props) => {
         video.play();
     }, [])
 
-    useEffect(()=>{
-        // alert(JSON.stringify(window.plus.webview.getWebviewById("stock").token)) //data与uniapp里定义的键名保持一致，那里也是定义的data：this.userInfo
-    },[])
-
     return (
         <div>
             <div id="header" className={style.header}>

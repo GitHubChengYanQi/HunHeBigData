@@ -4,49 +4,76 @@ import Table from "../table";
 import Button from "../button";
 import Text from "../text";
 import First from "../first";
+import {useEffect} from "react";
+import {UseStockForewarn} from "MES-Apis/lib/StockForewarn";
+import {SkuResultSkuJsons} from "MES-Apis/lib/Sku";
+import styles from './index.less'
 
 
 const InventoryAlert = (props) => {
 
-    const  dataSource = [
+    const {loading, data = {}, run} = UseStockForewarn.warningSkus({}, {
+        manual: true
+    })
+
+    useEffect(() => {
+        run({
+            params: {
+                limit: 50,
+                page: 1
+            },
+        });
+    }, [])
+
+    const dataSource = (data.data || [])
+    const columns = [
         {
-            name:"张三",
-            age:"18",
-            address:"佟二堡",
-        }
-    ];
-    const  columns = [
-        {
-            title: '姓名',
-            dataIndex: 'name',
-            key: 'name',
-            width:80,
-            align:'center',
-            render:(item,index)=>{
-                return (<First>22</First>);
+            title: '物料信息',
+            dataIndex: 'taskName',
+            key: 'taskName',
+            align: 'left',
+            render: (item) => {
+                return (<First>
+                    {SkuResultSkuJsons({skuResult: item.skuResult})}
+                </First>);
             }
         },
         {
-            title: '姓名',
-            dataIndex: 'name',
+            title: '库存数量',
+            dataIndex: 'number',
             key: 'name1',
-            align:'center',
-            render:(item,index)=>{
-                return (<Text color={"#f00"}>22</Text>);
+            align: 'center',
+            width: 120,
+            render: (item, index) => {
+                return (<Text color={"#FFE905"}>{item.number}</Text>);
             }
         },
         {
-            title: '年龄',
+            title: '报警类型',
             dataIndex: 'age',
             key: 'age',
-            align:'center',
-            render:(item,index)=>{
-                return (<Button type='orange'>11</Button>);
+            width: 200,
+            align: 'center',
+            render: (item) => {
+                let type = ''
+                let text = ''
+                if (item.number <= item.inventoryFloor) {
+                    type = 'red'
+                    text = '下限报警'
+                } else if (item.number >= item.inventoryCeiling) {
+                    type = 'orange'
+                    text = '上限报警'
+                } else {
+                    type = 'blue'
+                    text = '未报警'
+                }
+                return (<Button type={type}>{text}</Button>);
             }
         }
     ];
+
     return (
-            <Table title="库存预警" columns={columns} dataSource = {dataSource}/>
+        <Table title="库存预警" loading={loading} columns={columns} dataSource={dataSource} />
     );
 };
 export default InventoryAlert;

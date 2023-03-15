@@ -4,23 +4,26 @@ import style from "./index.less";
 
 
 const Button = (props) => {
-    const {children,type} = props;
+    const {children, type} = props;
     let renderType;
-    switch (type){
-        case "ching":
-            renderType=style.ching
+    switch (type) {
+        case "blue":
+            renderType = style.blue
             break;
-        case "deongaree":
-            renderType=style.deongaree
+        case "red":
+            renderType = style.red
             break;
         case "orange":
-            renderType=style.orange
+            renderType = style.orange
+            break;
+        case "green":
+            renderType = style.green
             break;
         default:
-            renderType = style.deongaree;
+            renderType = style.blue;
     }
     return (
-        <div className={style.button +" "+ renderType}>
+        <div className={style.button + " " + renderType}>
             {children}
         </div>
     );

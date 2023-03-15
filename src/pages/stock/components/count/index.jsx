@@ -35,10 +35,10 @@ const Count = (props) => {
         tmpNumber = tmpNumber.substring(tmpNumber.length-len);
         const tmp = [];
         for(let i=0; i < tmpNumber.length;i++){
-            console.log(tmpNumber[i]);
+
             tmp.push(<div className={style.number} key={i}><img src={numbers[tmpNumber[i]]} alt=""/></div>)
         }
-        console.log(tmp);
+
         return tmp;
     }
 
