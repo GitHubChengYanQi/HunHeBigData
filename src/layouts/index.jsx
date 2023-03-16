@@ -9,14 +9,11 @@ export default function Layout() {
     const [loading, setLoading] = useState(true);
     const [auth, setAuth] = useState(false)
 
-    const token = JSON.stringify(window.plus?.webview.getWebviewById("stock").token) || 'eyJhbGciOiJIUzUxMiJ9.eyJleHBpcmVzSW4iOjg2NDAwLCJzdWIiOiIxNDI1MjkyNjU4MTI5MDMxMTcwIiwiZXhwIjoxNjc4OTI0ODA0LCJ1c2VySWQiOjE0MjUyOTI2NTgxMjkwMzExNzAsImlhdCI6MTY3ODgzODQwNCwiYWNjb3VudCI6ImNoZW5nIiwidXNlcktleSI6Inh4eHgifQ.dcbN0CmramNnaLexKuGEAyfuJvLbbxydpAG62-nHXtJvubqUXC6ecvYqsTYDM5u1nb6T4EUgSCJHL9jJDHbvKg'
-    const baseURI = JSON.stringify(window.plus?.webview.getWebviewById("stock").baseURI) || 'http://192.168.2.100'
-
-
     useEffect(() => {
-        Init.setToken(token);
-        Init.initBaseURL(baseURI);
-
+        const globalData = window.globalData || {}
+        Init.setToken(globalData.token);
+        Init.initBaseURL(globalData.baseUrl);
+        setAuth(globalData.token && globalData.baseUrl);
         Init.responseConfig({
             loginTimeOut: () => {
 
@@ -25,19 +22,18 @@ export default function Layout() {
 
             },
         });
-        setAuth(token && baseURI);
         setLoading(false)
     }, [])
 
     if (loading) {
         return <div className={styles.loading}>
-            <Spin tip="Loading..." />
+            <Spin tip="Loading..."/>
         </div>
     }
 
 
     if (!auth) {
-        return  <div className={styles.error}>
+        return <div className={styles.error}>
             <Result
                 status="500"
                 title="系统初始化失败！"
@@ -48,7 +44,7 @@ export default function Layout() {
 
     return (
         <div className={styles.navs}>
-            <Outlet />
+            <Outlet/>
         </div>
     );
 }
