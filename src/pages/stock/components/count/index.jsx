@@ -36,7 +36,7 @@ const Count = (props) => {
         const tmp = [];
         for(let i=0; i < tmpNumber.length;i++){
 
-            tmp.push(<div className={style.number} key={i}><img src={numbers[tmpNumber[i]]} alt=""/></div>)
+            tmp.push(<div className={style.number} key={i}><img src={numbers[tmpNumber[i]] || numbers[0]} alt=""/></div>)
         }
 
         return tmp;

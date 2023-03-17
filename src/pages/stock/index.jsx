@@ -37,7 +37,7 @@ const Stock = (props) => {
                 <div id="center" className={style.center}>
                     <div id="center-top" className={style.centerTop}><Statistics /></div>
                     <div id="center-bottom" className={style.centerBottom}>
-                        <video muted id="video" style={{margin: "auto"}} autoPlay loop height="100%" src=""></video>
+                        <video muted id="video" style={{margin: "auto"}} autoPlay loop height="100%" src="" />
                     </div>
                 </div>
                 <div id="right" className={style.right}>
