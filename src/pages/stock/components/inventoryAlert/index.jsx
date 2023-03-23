@@ -1,16 +1,10 @@
-// @flow
 import * as React from 'react';
 import Table from "../table";
-import Button from "../button";
-import Text from "../text";
-import First from "../first";
 import {useEffect} from "react";
 import {UseStockForewarn} from "MES-Apis/lib/StockForewarn";
-import {SkuResultSkuJsons} from "MES-Apis/lib/Sku";
-import styles from './index.less'
 
 
-const InventoryAlert = (props) => {
+const InventoryAlert = () => {
 
     const {loading, data = {}, run} = UseStockForewarn.warningSkus({}, {
         manual: true
@@ -26,35 +20,12 @@ const InventoryAlert = (props) => {
     }, [])
 
     const dataSource = (data.data || [])
-    const columns = [
-        {
-            title: '物料信息',
-            dataIndex: 'taskName',
-            key: 'taskName',
-            align: 'left',
-            render: (item) => {
-                return (<First>
-                    {SkuResultSkuJsons({skuResult: item.skuResult})}
-                </First>);
-            }
-        },
-        {
-            title: '库存数量',
-            dataIndex: 'number',
-            key: 'name1',
-            align: 'center',
-            width: 120,
-            render: (item, index) => {
-                return (<Text color={"#FFE905"}>{item.number}</Text>);
-            }
-        },
-        {
-            title: '报警类型',
-            dataIndex: 'age',
-            key: 'age',
-            width: 200,
-            align: 'center',
-            render: (item) => {
+
+    return (
+        <Table
+            title="库存预警"
+            loading={loading}
+            dataSource={dataSource.map(item => {
                 let type = ''
                 let text = ''
                 if (item.number <= item.inventoryFloor) {
@@ -67,13 +38,15 @@ const InventoryAlert = (props) => {
                     type = 'blue'
                     text = '未报警'
                 }
-                return (<Button type={type}>{text}</Button>);
-            }
-        }
-    ];
-
-    return (
-        <Table title="库存预警" loading={loading} columns={columns} dataSource={dataSource} />
+                return {
+                    createTime: item.createTime,
+                    skuResult: {...item.skuResult, spuName: item.skuResult.spuResult?.name},
+                    type,
+                    number: item.number,
+                    statusName: text
+                }
+            })}
+        />
     );
 };
 export default InventoryAlert;

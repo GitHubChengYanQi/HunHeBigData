@@ -43,9 +43,44 @@
   }
 
   .tbody {
-    height: calc(100% - 50px - 41px - 28px - 8px);
+    height: calc(100% - 50px - 8px - 16px);
     overflow: hidden;
-    padding: 16px 20px 12px 20px;
-    background: linear-gradient(0deg, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)), linear-gradient(270deg, #08163E 0%, rgba(8, 22, 62, 0.00) 99%);
+    padding: 16px 0 0;
+  }
+
+  .sku {
+    padding-bottom: 12px;
+  }
+
+  .info {
+    display: flex;
+    align-items: center;
+
+    div {
+      width: 50%;
+    }
+  }
+
+  .item {
+    display: flex;
+    padding: 24px;
+
+    .skuInfo {
+      flex-grow: 1;
+    }
+  }
+
+  .other {
+    padding-top: 4px;
+    min-width: 120px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+
+  .coding {
+    font-size: 20px;
+    color: #fff;
   }
 }

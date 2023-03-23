@@ -4,16 +4,17 @@ import Table from "../table";
 import Button from "../button";
 import Text from "../text";
 import First from "../first";
-import {UseInStock, UseProcess} from "MES-Apis/lib";
+import {UseOrder, UseProcess} from "MES-Apis/lib";
 import {useEffect} from "react";
 import {ErpEnums} from "MES-Apis/lib/Erp";
 
 
-const InStock = (props) => {
+const Order = (props) => {
 
-    const {loading, data = {}, run} = UseInStock.instockList({}, {
+    const {loading, data = {}, run} = UseOrder.orderDetailList({}, {
         manual: true
     })
+
     useEffect(() => {
         run({
             params: {
@@ -27,12 +28,12 @@ const InStock = (props) => {
 
     return (
         <Table
-            title="入库物料"
+            title="在途物料"
             loading={loading}
             dataSource={dataSource.map(item => {
                 let statusName = ''
                 let type = ''
-                if (item.instockNumber === item.number) {
+                if (item.inStockNumber === item.purchaseNumber) {
                     statusName = '完成'
                     type = 'green'
                 } else {
@@ -43,11 +44,11 @@ const InStock = (props) => {
                     createTime: item.createTime,
                     skuResult: {...item.skuResult, spuName: item.skuResult.spuResult.name},
                     type,
-                    number: item.number,
+                    number: item.purchaseNumber,
                     statusName
                 }
             })}
         />
     );
 };
-export default InStock;
+export default Order;

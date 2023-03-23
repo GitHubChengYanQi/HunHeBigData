@@ -44,23 +44,28 @@
   }
   .center{
     height: calc(100vh - @height);
+
     width: 50vw;
     .centerTop{
-      padding: 16px;
-      height: calc(100% / 2  - 32px);
+      padding: 16px 0 ;
+      //height: calc(100% / 2  - 32px);
     }
     .centerBottom{
       padding: 16px;
-      height: calc(100% / 2  - 32px);
+      height: calc(100% - 530px - 32px);
       text-align: center;
     }
   }
   .right{
     height: calc(100vh - @height);
     width: 25vw;
-    .rightHeight{
+    .rightTop{
       padding: 16px;
-      height: calc(100% / 3  - 32px);
+      height: calc(100% / 3 * 2 - 32px);
+    }
+    .rightBottom{
+      padding: 16px;
+      height: calc(100% / 3 - 32px);
     }
   }
 }
