@@ -6,9 +6,7 @@ export default defineConfig({
     history: {type: "hash"},
     hash: true,
     routes: [
-        {path: "/", component: "stock/index"},
-        {path: "/docs", component: "docs"},
-        {path: "/stock", component: "stock/index"},
+        {path: "/", component: "GetData/index"},
     ],
     npmClient: 'npm',
 });
