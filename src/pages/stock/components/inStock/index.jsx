@@ -12,15 +12,25 @@ import {ErpEnums} from "MES-Apis/lib/Erp";
 const InStock = (props) => {
 
     const {loading, data = {}, run} = UseInStock.instockList({}, {
-        manual: true
+        manual: true,
+        onSuccess: () => {
+            setTimeout(() => {
+                select()
+            }, 18000000)
+        }
     })
-    useEffect(() => {
+
+    const select = () => {
         run({
             params: {
                 limit: 50,
                 page: 1
             },
         });
+    }
+
+    useEffect(() => {
+        select()
     }, [])
 
     const dataSource = (data.data || [])

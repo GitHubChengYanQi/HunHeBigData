@@ -2,7 +2,7 @@ import {Outlet} from 'umi';
 import styles from './index.less';
 import {useEffect, useState} from "react";
 import {Init} from "MES-Apis/src/Init";
-import {Alert, Button, Result, Spin} from "antd";
+import {Result, Spin} from "antd";
 
 export default function Layout() {
 
@@ -11,7 +11,7 @@ export default function Layout() {
 
     useEffect(() => {
         const globalData = window.globalData || {}
-        Init.setToken(globalData.token || 'eyJhbGciOiJIUzUxMiJ9.eyJleHBpcmVzSW4iOjg2NDAwLCJzdWIiOiIxNDI1MjkyNjU4MTI5MDMxMTcwIiwiZXhwIjoxNjc5MTIxMjM2LCJ1c2VySWQiOjE0MjUyOTI2NTgxMjkwMzExNzAsImlhdCI6MTY3OTAzNDgzNiwiYWNjb3VudCI6ImNoZW5nIiwidXNlcktleSI6Inh4eHgifQ.rbfPxTcb-A0gVXhQ4vX3eNdoaPoWUrSELj676xwoqJzpamRwlIoqz4wHVOy6JKeYnKj9VhAlj0BvDGa5I5k9eg');
+        Init.setToken(globalData.token || 'eyJhbGciOiJIUzUxMiJ9.eyJleHBpcmVzSW4iOjg2NDAwLCJzdWIiOiIxNDI1MjkyNjU4MTI5MDMxMTcwIiwiZXhwIjoxNjc5NzMzMjQ5LCJ1c2VySWQiOjE0MjUyOTI2NTgxMjkwMzExNzAsImlhdCI6MTY3OTY0Njg0OSwiYWNjb3VudCI6ImNoZW5nIiwidXNlcktleSI6Inh4eHgifQ.Rd6vy1SaulRduP7ZJYzQdzLauegn04WN25sHtYctf2SAc7sKBjj8llEs500oQ8YP1n5NNZWnBcRMUAH50DqxNQ');
         Init.initBaseURL(globalData.baseUrl || 'http://192.168.2.220:8885');
         setAuth(globalData.token && globalData.baseUrl);
         Init.responseConfig({
@@ -32,7 +32,7 @@ export default function Layout() {
     }
 
 
-    if (auth) {
+    if (!auth) {
         return <div className={styles.error}>
             <Result
                 status="500"
