@@ -2,7 +2,7 @@ import cookie from 'js-cookie';
 import axios from 'axios';
 import {message,} from 'antd';
 
-const baseURI = 'http://10.147.20.124:81'
+const baseURI = 'http://10.147.20.160'
 
 const ajaxService = axios.create({
     baseURL: baseURI,
