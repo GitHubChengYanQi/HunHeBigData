@@ -198,8 +198,8 @@ const GetData = () => {
                 I8: item.leaveHour,
                 C9: item.leaveRoom,
                 I4: item.marriage,
-                C1: item.medicalPayment,
-                // I1: item.medicalRecordNumber,
+                C1: item.medicalPayment.length > 1 ? item.medicalPayment : ('0' + item.medicalPayment),
+                I1: item.medicalRecordNumber,
                 C2: item.name,
                 C4: item.nation,
                 K2: item.nationality === '501' ? 'CHN' : '',
@@ -219,7 +219,7 @@ const GetData = () => {
 
             const data = {...costGatherData, ...operationDetailData, ...operationData, ...outHospitalData, ...outhospitalDetailData, ...inHospitalBaseData}
             console.log(data)
-            window.electronAPI.LoadData(JSON.stringify([data]))
+            window.electronAPI.LoadData(data)
             message.success('添加成功！')
         }
     })
@@ -247,8 +247,8 @@ const GetData = () => {
                             actions={[<Button loading={detailLoading} type="link" onClick={() => {
                                 detailRun({
                                     params: {
-                                        // id: item.patientId,
-                                        id: '00018670'
+                                        id: item.patientId,
+                                        // id: '00018670'
                                     }
                                 });
                             }}>
