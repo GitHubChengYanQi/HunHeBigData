@@ -1,10 +1,11 @@
-import React, {useState} from "react";
-import {Button, Input, List, message, Spin} from "antd";
+import React, {useEffect, useState} from "react";
+import {Button, Divider, Input, List, message, Modal, Spin} from "antd";
 import useRequest from "../../util/Request/useRequest";
 import moment from "moment";
 import {anesthesiaType} from "./switch";
 import styles from './index.less'
 import SearchValueFormat from "./components/SearchValueFormat";
+import InfiniteScroll from 'react-infinite-scroll-component';
 
 const listUrl = {
     url: '/bzfy/inhospitalBase/list',
@@ -18,14 +19,23 @@ const detailUrl = {
 
 const GetData = () => {
 
+    const [page, setPage] = useState(1)
+
     const [searchValue, setSearchValue] = useState('')
 
-    const {loading, data, run} = useRequest(listUrl, {
-        // manual: true
-        // debounceInterval: 1000,
+    const [data, setData] = useState([])
+
+    const [hasMore, setHasMore] = useState(true)
+
+    const {loading, run} = useRequest(listUrl, {
+        onSuccess: (res) => {
+            setPage(page + 1)
+            setData([...data, ...res])
+            setHasMore(res.length >= 20);
+        }
     })
 
-    const postData = (res, add) => {
+    const postData = (res) => {
         const item = res || {}
 
         const costGather = res.costGatherResult || {}
@@ -196,7 +206,7 @@ const GetData = () => {
             C9: item.leaveRoom,
             I4: item.marriage,
             C1: item.medicalPayment.length > 1 ? item.medicalPayment : ('0' + item.medicalPayment),
-            I1: item.medicalRecordNumber,
+            // I1: item.medicalRecordNumber,
             C2: item.name,
             C4: item.nation,
             K2: item.nationality === '501' ? 'CHN' : '',
@@ -215,22 +225,69 @@ const GetData = () => {
         }
 
         const data = {...costGatherData, ...operationDetailData, ...operationData, ...outHospitalData, ...outhospitalDetailData, ...inHospitalBaseData}
-        console.log(data)
-        window.electronAPI.LoadData({data, add})
+        // console.log(data)
+        window.electronAPI && window.electronAPI.LoadData(data)
         message.success('添加成功！')
     }
 
     const {loading: detailLoading, run: detailRun} = useRequest(detailUrl, {
         manual: true,
+        onSuccess: (res) => {
+            postData(res)
+        },
+        onError: () => {
+            message.error('获取数据失败!')
+        }
     })
+
+    useEffect(() => {
+        window.document.title = '数据列表'
+        window.electronAPI && window.electronAPI.queryList((event, {name}) => {
+            Modal.confirm({
+                // centered: true,
+                content: '是否搜索【' + name + '】',
+                okText: '确认',
+                cancelText: '取消',
+                onOk() {
+                    setSearchValue(name)
+                    setPage(1)
+                    setData([])
+                    run({
+                        params: {
+                            page: 1,
+                            keyword: name
+                        }
+                    })
+                }
+            })
+        })
+    }, [])
 
     // const data = [{}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {},]
 
+    const loadMoreData = () => {
+        if (loading) {
+            return;
+        }
+        run({
+            params: {
+                page,
+                keyword: searchValue
+            }
+        })
+    };
+
     return <div>
         <Input.Search
+            value={searchValue}
             placeholder='请输入病案号'
+            onChange={({target: {value}}) => {
+                setSearchValue(value)
+            }}
             onSearch={(value) => {
                 setSearchValue(value)
+                setPage(1)
+                setData([])
                 run({
                     params: {
                         keyword: value
@@ -238,34 +295,44 @@ const GetData = () => {
                 })
             }}
         />
-        <div style={{padding: '24px 0 24px 24px', maxHeight: 'calc(100vh - 120px)', overflow: 'auto', marginTop: 16}}>
-            <Spin spinning={loading || detailLoading} tip={loading ? '正在刷新数据，请稍后...' : '正在获取数据信息，请稍后...'}>
+        <div id='scrollableDiv' style={{
+            padding: '24px 0 24px 24px',
+            maxHeight: 'calc(100vh - 120px)',
+            overflow: 'auto',
+            marginTop: 16
+        }}>
+            <InfiniteScroll
+                dataLength={data.length}
+                next={loadMoreData}
+                scrollThreshold={1}
+                hasMore={hasMore}
+                loader={<div style={{textAlign: "center"}}>
+                    <Spin />
+                </div>}
+                endMessage={<Divider plain>没有更多数据啦~</Divider>}
+                scrollableTarget="scrollableDiv"
+            >
                 <List
                     dataSource={data || []}
                     renderItem={(item) => (
                         <List.Item
-                            actions={[<Button loading={detailLoading} type="link" onClick={async () => {
-                                const res = await detailRun({
-                                    params: {
-                                        id: item.patientId,
-                                        // id: '00018670'
+                            actions={[<Button loading={detailLoading} type="link" onClick={() => {
+                                Modal.confirm({
+                                    content: `确定把【${item.name}】的数据填写进表格吗？`,
+                                    okText: '确定',
+                                    cancelText: '取消',
+                                    onOk() {
+                                        return detailRun({
+                                            params: {
+                                                id: item.patientId,
+                                                // id: '00018670'
+                                            }
+                                        });
                                     }
-                                });
-                                postData(res)
+                                })
                             }}>
-                                获取数据
-                            </Button>,
-                                <Button loading={detailLoading} type="link" onClick={async () => {
-                                    const res = await detailRun({
-                                        params: {
-                                            id: item.patientId,
-                                            // id: '00018670'
-                                        }
-                                    });
-                                    postData(res, true)
-                                }}>
-                                    增加数据
-                                </Button>]}
+                                填写数据
+                            </Button>]}
                         >
                             <List.Item.Meta
                                 description={<div style={{color: '#000'}}>
@@ -331,14 +398,19 @@ const GetData = () => {
                                             />
                                         </div>
                                     </div>
+                                    <div className={styles.item}>
+                                        <div className={styles.label}>入院时间：</div>
+                                        <div>
+                                            {item.hospitalizationDate}
+                                        </div>
+                                    </div>
                                 </div>}
                             />
                         </List.Item>
                     )}
                 />
-            </Spin>
+            </InfiniteScroll>
         </div>
-
     </div>
 };
 
