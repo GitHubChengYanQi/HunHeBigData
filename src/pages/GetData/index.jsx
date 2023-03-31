@@ -1,11 +1,12 @@
 import React, {useEffect, useState} from "react";
-import {Button, Divider, Input, List, message, Modal, Spin} from "antd";
+import {Button, DatePicker, Divider, Input, List, message, Modal, Spin} from "antd";
 import useRequest from "../../util/Request/useRequest";
 import moment from "moment";
 import {anesthesiaType} from "./switch";
 import styles from './index.less'
 import SearchValueFormat from "./components/SearchValueFormat";
 import InfiniteScroll from 'react-infinite-scroll-component';
+import locale from 'antd/es/date-picker/locale/zh_CN'
 
 const listUrl = {
     url: '/bzfy/inhospitalBase/list',
@@ -278,23 +279,29 @@ const GetData = () => {
     };
 
     return <div>
-        <Input.Search
-            value={searchValue}
-            placeholder='请输入病案号'
-            onChange={({target: {value}}) => {
-                setSearchValue(value)
-            }}
-            onSearch={(value) => {
-                setSearchValue(value)
-                setPage(1)
-                setData([])
-                run({
-                    params: {
-                        keyword: value
-                    }
-                })
-            }}
-        />
+        <div className={styles.search}>
+            <DatePicker locale={locale} placeholder='请选择月份' picker="month" onChange={(value, string) => {
+                console.log(value, string)
+            }}/>
+            <Input.Search
+                className={styles.input}
+                value={searchValue}
+                placeholder='请输入病案号'
+                onChange={({target: {value}}) => {
+                    setSearchValue(value)
+                }}
+                onSearch={(value) => {
+                    setSearchValue(value)
+                    setPage(1)
+                    setData([])
+                    run({
+                        params: {
+                            keyword: value
+                        }
+                    })
+                }}
+            />
+        </div>
         <div id='scrollableDiv' style={{
             padding: '24px 0 24px 24px',
             maxHeight: 'calc(100vh - 120px)',
@@ -307,7 +314,7 @@ const GetData = () => {
                 scrollThreshold={1}
                 hasMore={hasMore}
                 loader={<div style={{textAlign: "center"}}>
-                    <Spin />
+                    <Spin/>
                 </div>}
                 endMessage={<Divider plain>没有更多数据啦~</Divider>}
                 scrollableTarget="scrollableDiv"
