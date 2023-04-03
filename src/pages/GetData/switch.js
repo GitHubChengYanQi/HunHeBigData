@@ -47,3 +47,43 @@ export const anesthesiaType = (value) => {
 
     }
 }
+
+export const medicalPaymentType = (value) => {
+    switch (value) {
+        case '1':
+        case '1.1':
+        case '1.2':
+            return '01'
+        case '2':
+        case '2.2':
+            return '02'
+        case '2.1':
+            return '09'
+        case '3':
+        case '3.1':
+        case '3.2':
+            return '03'
+        case '4':
+            return '04'
+        case '5':
+            return '05'
+        case '6':
+            return '06'
+        case '7':
+            return '07'
+        case '8':
+            return '08'
+        case '9':
+            return '99'
+        default:
+            return '99'
+    }
+}
+
+export const marriageType = (value) => {
+    if ((value + '') === '2') {
+        return 21
+    } else {
+        return value + '0'
+    }
+}

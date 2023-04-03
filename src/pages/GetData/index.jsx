@@ -1,8 +1,8 @@
 import React, {useEffect, useState} from "react";
-import {Button, DatePicker, Divider, Input, List, message, Modal, Spin} from "antd";
+import {Button, DatePicker, Divider, Input, List, message, Modal, Select, Spin} from "antd";
 import useRequest from "../../util/Request/useRequest";
 import moment from "moment";
-import {anesthesiaType} from "./switch";
+import {anesthesiaType, marriageType, medicalPaymentType} from "./switch";
 import styles from './index.less'
 import SearchValueFormat from "./components/SearchValueFormat";
 import InfiniteScroll from 'react-infinite-scroll-component';
@@ -20,11 +20,17 @@ const detailUrl = {
 
 const GetData = () => {
 
+    console.log(process.env.NODE_ENV)
+
     const [page, setPage] = useState(1)
 
     const [searchValue, setSearchValue] = useState('')
 
     const [data, setData] = useState([])
+
+    const [date, setDate] = useState('')
+
+    const [type, setType] = useState('in')
 
     const [hasMore, setHasMore] = useState(true)
 
@@ -56,7 +62,7 @@ const GetData = () => {
             J46: costGather.anesthesia,
             L46: costGather.operation,
             D47: costGather.rehabilitation,
-            F47: costGather.TCMTreatment,
+            F47: costGather.tcmTreatment,
             H47: costGather.westernMedicine,
             J47: costGather.antimicrobialDrug,
             D48: costGather.chinesePatentDrug,
@@ -70,13 +76,15 @@ const GetData = () => {
             D50: costGather.disposableTreatment,
             F50: costGather.disposableOperation,
             J50: costGather.other2,
+            I43: costGather.fY_FY0ZFJE,
+            D44: costGather.ordnMedServfee
         }
 
         const operation = res.operationResult || {}
 
         const operationData = {
             D37: operation.departureMode,
-            J37: operation.hospitalMame,
+            J37: operation.hospitalName,
             J38: operation.townshipHospital,
             D39: operation.rehospitalizationPlan,
             J39: operation.rehospitalizationPurpose,
@@ -106,7 +114,7 @@ const GetData = () => {
                     [`G${30 + index}`]: item.firstAssistant,
                     [`H${30 + index}`]: item.lastAssistant,
                     [`I${30 + index}`]: item.notchGrade,
-                    [`J${30 + index}`]: item.IncisionHealingCategory,
+                    [`J${30 + index}`]: item.incisionHealingCategory,
                     [`K${30 + index}`]: anesthesiaType(item.anesthesiaType),
                     [`L${30 + index}`]: item.anesthesiologist,
                 }
@@ -200,13 +208,12 @@ const GetData = () => {
             C8: item.hospitalizationRoom,
             G1: item.hospitalizationsNumber,
             E4: item.idCard,
-            // C1:item.inHospitalId,
             G8: moment(item.leaveDate).format('YYYYMMDD'),
             K8: item.leaveDepartment,
             I8: item.leaveHour,
             C9: item.leaveRoom,
-            I4: item.marriage,
-            C1: item.medicalPayment.length > 1 ? item.medicalPayment : ('0' + item.medicalPayment),
+            I4: marriageType(item.marriage),
+            C1: medicalPaymentType(item.medicalPayment),
             // I1: item.medicalRecordNumber,
             C2: item.name,
             C4: item.nation,
@@ -214,7 +221,6 @@ const GetData = () => {
             K3: item.nativePlace,
             E3: item.newbornBirthWeight,
             G4: item.occupation,
-            // C1:item.patientId,
             C5: item.phone,
             K5: item.placeOfWork,
             E6: item.placeOfWorkZipCode, // *
@@ -223,6 +229,7 @@ const GetData = () => {
             E2: item.sex,
             E8: item.transferDepartment,
             C6: item.workPhone,
+            I9: item.diagnoseCode ? item.diagnoseCode.split('x')[0] : null
         }
 
         const data = {...costGatherData, ...operationDetailData, ...operationData, ...outHospitalData, ...outhospitalDetailData, ...inHospitalBaseData}
@@ -241,6 +248,14 @@ const GetData = () => {
         }
     })
 
+    const startSearch = (params) => {
+        setPage(1)
+        setData([])
+        run({
+            params
+        })
+    }
+
     useEffect(() => {
         window.document.title = '数据列表'
         window.electronAPI && window.electronAPI.queryList((event, {name}) => {
@@ -250,15 +265,10 @@ const GetData = () => {
                 okText: '确认',
                 cancelText: '取消',
                 onOk() {
+                    startSearch({keyword: name})
                     setSearchValue(name)
-                    setPage(1)
-                    setData([])
-                    run({
-                        params: {
-                            page: 1,
-                            keyword: name
-                        }
-                    })
+                    setDate('');
+                    setType('in');
                 }
             })
         })
@@ -273,38 +283,62 @@ const GetData = () => {
         run({
             params: {
                 page,
-                keyword: searchValue
+                keyword: searchValue,
+                year: date ? date.split('-')[0] : null,
+                month: date ? date.split('-')[1] : null,
+                type
             }
         })
     };
 
     return <div>
         <div className={styles.search}>
-            <DatePicker locale={locale} placeholder='请选择月份' picker="month" onChange={(value, string) => {
-                console.log(value, string)
-            }}/>
-            <Input.Search
-                className={styles.input}
-                value={searchValue}
-                placeholder='请输入病案号'
-                onChange={({target: {value}}) => {
-                    setSearchValue(value)
-                }}
-                onSearch={(value) => {
-                    setSearchValue(value)
-                    setPage(1)
-                    setData([])
-                    run({
-                        params: {
-                            keyword: value
-                        }
+            <div className={styles.type}>
+                <div className={styles.searchLabel}>
+                    类型：
+                </div>
+                <Select
+                    options={[{label: '入院', value: 'in'}, {label: '出院', value: 'out'}]}
+                    value={type}
+                    onChange={setType}
+                />
+                <DatePicker
+                    locale={locale}
+                    value={date ? moment(date) : null}
+                    placeholder='请选择月份'
+                    picker='month'
+                    onChange={(value, string) => {
+                        setDate(string)
+                    }}
+                />
+            </div>
+            <div className={styles.type}>
+                <div className={styles.searchLabel}>
+                    关键字：
+                </div>
+                <Input
+                    className={styles.input}
+                    value={searchValue}
+                    placeholder='请输入病案号'
+                    onChange={({target: {value}}) => {
+                        setSearchValue(value)
+                    }}
+                />
+            </div>
+            <div>
+                <Button type='primary' onClick={() => {
+                    startSearch({
+                        keyword: searchValue,
+                        year: date ? date.split('-')[0] : null,
+                        month: date ? date.split('-')[1] : null,
+                        type
                     })
-                }}
-            />
+                }}>搜索</Button>
+            </div>
         </div>
         <div id='scrollableDiv' style={{
-            padding: '24px 0 24px 24px',
-            maxHeight: 'calc(100vh - 120px)',
+            padding: '0 0 24px 24px',
+            maxHeight: 'calc(100vh - 160px)',
             overflow: 'auto',
             marginTop: 16
         }}>
@@ -314,7 +348,7 @@ const GetData = () => {
                 scrollThreshold={1}
                 hasMore={hasMore}
                 loader={<div style={{textAlign: "center"}}>
-                    <Spin/>
+                    <Spin />
                 </div>}
                 endMessage={<Divider plain>没有更多数据啦~</Divider>}
                 scrollableTarget="scrollableDiv"
@@ -408,7 +442,13 @@ const GetData = () => {
                                     <div className={styles.item}>
                                         <div className={styles.label}>入院时间：</div>
                                         <div>
-                                            {item.hospitalizationDate}
+                                            {item.hospitalizationDate || '-'}
+                                        </div>
+                                    </div>
+                                    <div className={styles.item}>
+                                        <div className={styles.label}>出院时间：</div>
+                                        <div>
+                                            {item.leaveDate || '-'}
                                         </div>
                                     </div>
                                 </div>}
