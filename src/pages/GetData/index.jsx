@@ -13,6 +13,11 @@ const listUrl = {
     method: "GET"
 }
 
+const listV2Url = {
+    url: '/bzfy/inhospitalBase/list2',
+    method: "GET"
+}
+
 const detailUrl = {
     url: '/bzfy/inhospitalBase/detail',
     method: "GET"
@@ -20,21 +25,19 @@ const detailUrl = {
 
 const GetData = () => {
 
-    console.log(process.env.NODE_ENV)
-
     const [page, setPage] = useState(1)
 
     const [searchValue, setSearchValue] = useState('')
 
     const [data, setData] = useState([])
 
-    const [date, setDate] = useState('')
+    const [date, setDate] = useState([])
 
     const [type, setType] = useState('in')
 
     const [hasMore, setHasMore] = useState(true)
 
-    const {loading, run} = useRequest(listUrl, {
+    const {loading, run} = useRequest(listV2Url, {
         onSuccess: (res) => {
             setPage(page + 1)
             setData([...data, ...res])
@@ -48,7 +51,6 @@ const GetData = () => {
         const costGather = res.costGatherResult || {}
 
         const costGatherData = {
-            D43: costGather.totalCost,
             F44: costGather.generalTreatmentOperation,
             H44: costGather.nurse,
             K44: costGather.other,
@@ -79,6 +81,8 @@ const GetData = () => {
             I43: costGather.fY_FY0ZFJE,
             D44: costGather.ordnMedServfee
         }
+
+        costGatherData['D43'] = (costGatherData.D44 + costGatherData.F44 + costGatherData.H44 + costGatherData.K44 + costGatherData.D45 + costGatherData.F45 + costGatherData.H45 + costGatherData.K45 + costGatherData.D46 + costGatherData.H46 + costGatherData.D47 + costGatherData.F47 + costGatherData.H47 + costGatherData.D48 + costGatherData.F48 + costGatherData.H48 + costGatherData.K48 + costGatherData.D49 + costGatherData.F49 + costGatherData.H49 + costGatherData.L49 + costGatherData.D50 + costGatherData.F50 + costGatherData.J50) || 0
 
         const operation = res.operationResult || {}
 
@@ -233,7 +237,7 @@ const GetData = () => {
         }
 
         const data = {...costGatherData, ...operationDetailData, ...operationData, ...outHospitalData, ...outhospitalDetailData, ...inHospitalBaseData}
-        // console.log(data)
+        console.log(data['D43'])
         window.electronAPI && window.electronAPI.LoadData(data)
         message.success('添加成功！')
     }
@@ -284,8 +288,8 @@ const GetData = () => {
             params: {
                 page,
                 keyword: searchValue,
-                year: date ? date.split('-')[0] : null,
-                month: date ? date.split('-')[1] : null,
+                bTime: date[0] || null,
+                eTime: date[1] || null,
                 type
             }
         })
@@ -302,13 +306,13 @@ const GetData = () => {
                     value={type}
                     onChange={setType}
                 />
-                <DatePicker
+                <DatePicker.RangePicker
                     locale={locale}
-                    value={date ? moment(date) : null}
-                    placeholder='请选择月份'
-                    picker='month'
-                    onChange={(value, string) => {
-                        setDate(string)
+                    allowClear
+                    value={date.length > 0 ? [moment(date[0]), moment(date[1])] : []}
+                    onChange={(date, dateString = []) => {
+                        const dates = dateString.filter(item => item);
+                        setDate(dates.length === 0 ? [] : [moment(dateString[0]).format('YYYY-MM-DD'), moment(dateString[1]).format('YYYY-MM-DD')]);
                     }}
                 />
             </div>
@@ -329,8 +333,8 @@ const GetData = () => {
                 <Button type='primary' onClick={() => {
                     startSearch({
                         keyword: searchValue,
-                        year: date ? date.split('-')[0] : null,
-                        month: date ? date.split('-')[1] : null,
+                        bTime: date[0] || null,
+                        eTime: date[1] || null,
                         type
                     })
                 }}>搜索</Button>
