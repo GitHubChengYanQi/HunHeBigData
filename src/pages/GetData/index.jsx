@@ -2,7 +2,13 @@ import React, {useEffect, useState} from "react";
 import {Button, DatePicker, Divider, Input, List, message, Modal, Select, Spin} from "antd";
 import useRequest from "../../util/Request/useRequest";
 import moment from "moment";
-import {anesthesiaType, marriageType, medicalPaymentType} from "./switch";
+import {
+    anesthesiaType,
+    contactRelationshipType,
+    hospitalizationDepartmentType,
+    marriageType,
+    medicalPaymentType
+} from "./switch";
 import styles from './index.less'
 import SearchValueFormat from "./components/SearchValueFormat";
 import InfiniteScroll from 'react-infinite-scroll-component';
@@ -51,6 +57,7 @@ const GetData = () => {
         const costGather = res.costGatherResult || {}
 
         const costGatherData = {
+            D43: costGather.totalCost,
             F44: costGather.generalTreatmentOperation,
             H44: costGather.nurse,
             K44: costGather.other,
@@ -82,8 +89,8 @@ const GetData = () => {
             D44: costGather.ordnMedServfee
         }
 
-        costGatherData['D43'] = (costGatherData.D44 + costGatherData.F44 + costGatherData.H44 + costGatherData.K44 + costGatherData.D45 + costGatherData.F45 + costGatherData.H45 + costGatherData.K45 + costGatherData.D46 + costGatherData.H46 + costGatherData.D47 + costGatherData.F47 + costGatherData.H47 + costGatherData.D48 + costGatherData.F48 + costGatherData.H48 + costGatherData.K48 + costGatherData.D49 + costGatherData.F49 + costGatherData.H49 + costGatherData.L49 + costGatherData.D50 + costGatherData.F50 + costGatherData.J50) || 0
-
+        const money = (costGatherData.D44 + costGatherData.F44 + costGatherData.H44 + costGatherData.K44 + costGatherData.D45 + costGatherData.F45 + costGatherData.H45 + costGatherData.K45 + costGatherData.D46 + costGatherData.H46 + costGatherData.D47 + costGatherData.F47 + costGatherData.H47 + costGatherData.D48 + costGatherData.F48 + costGatherData.H48 + costGatherData.K48 + costGatherData.D49 + costGatherData.F49 + costGatherData.H49 + costGatherData.L49 + costGatherData.D50 + costGatherData.F50 + costGatherData.J50) || 0
+        console.log(costGather.totalCost,money)
         const operation = res.operationResult || {}
 
         const operationData = {
@@ -198,14 +205,14 @@ const GetData = () => {
             G2: moment(item.birthday).format('YYYYMMDD'),
             K6: item.contactAddress,
             C7: item.contactPhone,
-            I6: item.contactRelationship,
+            I6: contactRelationshipType(item.contactRelationship),
             G6: item.contactsName,
             K4: item.currentAddress,
             E5: item.currentZipCode,
             G9: item.diagnose,
             E1: item.healthCard,
             G7: moment(item.hospitalizationDate).format('YYYYMMDD'),
-            K7: item.hospitalizationDepartment,
+            K7: hospitalizationDepartmentType(item.hospitalizationDepartment),
             I7: item.hospitalizationHour,
             E9: item.hospitalizationLength,
             E7: item.hospitalizationMethod,
@@ -213,7 +220,7 @@ const GetData = () => {
             G1: item.hospitalizationsNumber,
             E4: item.idCard,
             G8: moment(item.leaveDate).format('YYYYMMDD'),
-            K8: item.leaveDepartment,
+            K8: hospitalizationDepartmentType(item.leaveDepartment),
             I8: item.leaveHour,
             C9: item.leaveRoom,
             I4: marriageType(item.marriage),
@@ -237,7 +244,7 @@ const GetData = () => {
         }
 
         const data = {...costGatherData, ...operationDetailData, ...operationData, ...outHospitalData, ...outhospitalDetailData, ...inHospitalBaseData}
-        console.log(data['D43'])
+        // console.log(data['D43'])
         window.electronAPI && window.electronAPI.LoadData(data)
         message.success('添加成功！')
     }

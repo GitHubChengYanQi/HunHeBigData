@@ -87,3 +87,51 @@ export const marriageType = (value) => {
         return value + '0'
     }
 }
+
+export const contactRelationshipType = (value) => {
+    switch (value + '') {
+        case '01':
+            return 1
+        case '02':
+            return 2
+        case '03':
+            return 3
+        case '04':
+        case '041':
+        case '042':
+        case '043':
+        case '044':
+            return 4
+        case '05':
+            return 5
+        case '06':
+        case '061':
+        case '062':
+            return 6
+        case '071':
+        case '072':
+        case '073':
+        case '074':
+            return 7
+        case '081':
+        case '082':
+        case '09':
+        case '091':
+        case '092':
+        case '093':
+            return 8
+        case '08':
+            return 0
+        default:
+            return 0
+    }
+}
+
+export const hospitalizationDepartmentType = (value) => {
+    switch (value + '') {
+        case '07.00':
+            return '07.12';
+        default:
+            return value
+    }
+}
