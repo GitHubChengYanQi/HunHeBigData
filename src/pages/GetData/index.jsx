@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from "react";
-import {Button, DatePicker, Divider, Input, List, message, Modal, Select, Spin} from "antd";
+import {Button, Checkbox, DatePicker, Divider, Input, List, message, Modal, Progress, Select, Spin} from "antd";
 import useRequest from "../../util/Request/useRequest";
 import moment from "moment";
 import {
@@ -13,6 +13,7 @@ import styles from './index.less'
 import SearchValueFormat from "./components/SearchValueFormat";
 import InfiniteScroll from 'react-infinite-scroll-component';
 import locale from 'antd/es/date-picker/locale/zh_CN'
+import {CheckCircleOutlined, CloseCircleOutlined} from '@ant-design/icons'
 
 const listUrl = {
     url: '/bzfy/inhospitalBase/list',
@@ -29,6 +30,13 @@ const detailUrl = {
     method: "GET"
 }
 
+const addLogUrl = {
+    url: '/bzfy/log/add',
+    method: "GET"
+}
+
+let limit = 200
+
 const GetData = () => {
 
     const [page, setPage] = useState(1)
@@ -43,11 +51,18 @@ const GetData = () => {
 
     const [hasMore, setHasMore] = useState(true)
 
-    const {loading, run} = useRequest(listV2Url, {
+    const [checkList, setCheckList] = useState([])
+
+    const [open, setOpen] = useState(false)
+
+    const [batchDone, setBatchDone] = useState(false)
+
+    const {loading, data: listData = {}, run} = useRequest({...listV2Url, params: {limit, page: 1}}, {
+        response: true,
         onSuccess: (res) => {
             setPage(page + 1)
-            setData([...data, ...res])
-            setHasMore(res.length >= 20);
+            setData([...data, ...res.data])
+            setHasMore(res.data.length >= 20);
         }
     })
 
@@ -89,8 +104,6 @@ const GetData = () => {
             D44: costGather.ordnMedServfee
         }
 
-        const money = (costGatherData.D44 + costGatherData.F44 + costGatherData.H44 + costGatherData.K44 + costGatherData.D45 + costGatherData.F45 + costGatherData.H45 + costGatherData.K45 + costGatherData.D46 + costGatherData.H46 + costGatherData.D47 + costGatherData.F47 + costGatherData.H47 + costGatherData.D48 + costGatherData.F48 + costGatherData.H48 + costGatherData.K48 + costGatherData.D49 + costGatherData.F49 + costGatherData.H49 + costGatherData.L49 + costGatherData.D50 + costGatherData.F50 + costGatherData.J50) || 0
-        console.log(costGather.totalCost,money)
         const operation = res.operationResult || {}
 
         const operationData = {
@@ -245,8 +258,13 @@ const GetData = () => {
 
         const data = {...costGatherData, ...operationDetailData, ...operationData, ...outHospitalData, ...outhospitalDetailData, ...inHospitalBaseData}
         // console.log(data['D43'])
-        window.electronAPI && window.electronAPI.LoadData(data)
-        message.success('添加成功！')
+        const batchAdd = window.batchAdd || {}
+        if (batchAdd.loading) {
+            window.electronAPI && window.electronAPI.createHealth({data, patientId: item.patientId, end: batchAdd.end})
+        } else {
+            window.electronAPI && window.electronAPI.LoadData({data, patientId: item.patientId})
+            message.success('添加成功！')
+        }
     }
 
     const {loading: detailLoading, run: detailRun} = useRequest(detailUrl, {
@@ -259,17 +277,29 @@ const GetData = () => {
         }
     })
 
+    const {run: addLogRun} = useRequest(addLogUrl, {
+        manual: true,
+    })
+
     const startSearch = (params) => {
+        // setCheckList([])
         setPage(1)
         setData([])
         run({
-            params
+            params: {
+                ...params,
+                limit,
+                page: 1
+            }
         })
     }
 
     useEffect(() => {
         window.document.title = '数据列表'
         window.electronAPI && window.electronAPI.queryList((event, {name}) => {
+            if (window.batchAdd && window.batchAdd.loading) {
+                return
+            }
             Modal.confirm({
                 // centered: true,
                 content: '是否搜索【' + name + '】',
@@ -280,6 +310,17 @@ const GetData = () => {
                     setSearchValue(name)
                     setDate('');
                     setType('in');
+                }
+            })
+        })
+        window.electronAPI && window.electronAPI.createHealthDone((event) => {
+            nextCreat()
+        })
+
+        window.electronAPI && window.electronAPI.postDataDone((event, data) => {
+            addLogRun({
+                params: {
+                    patientId: data.patientId
                 }
             })
         })
@@ -297,10 +338,56 @@ const GetData = () => {
                 keyword: searchValue,
                 bTime: date[0] || null,
                 eTime: date[1] || null,
-                type
+                type,
+                limit,
             }
         })
     };
+
+    const nextCreat = () => {
+        const {list, loading, index} = window.batchAdd || {}
+        if (loading) {
+            const newIndex = index + 1
+            if (newIndex === list.length) {
+                window.batchAdd = {
+                    ...window.batchAdd,
+                    index: newIndex,
+                    loading: false
+                }
+                setBatchDone(true)
+                message.success('添加成功！')
+                return
+            }
+            window.batchAdd = {
+                ...window.batchAdd,
+                index: newIndex,
+                end: newIndex === list.length - 1
+            }
+            createHealth(list[newIndex], newIndex);
+        }
+    }
+
+    const createHealth = (item, index) => {
+        detailRun({
+            params: {
+                id: item.patientId,
+            }
+        }).catch(() => {
+            window.batchAdd = {
+                ...window.batchAdd,
+                errors: [...window.batchAdd.errors, index]
+            }
+            nextCreat()
+        });
+    }
+
+    const batchAddTitle = () => {
+        if (window.batchAdd && window.batchAdd.loading) {
+            return '正在保存中...'
+        } else {
+            return '已选中信息'
+        }
+    }
 
     return <div>
         <div className={styles.search}>
@@ -336,20 +423,33 @@ const GetData = () => {
                     }}
                 />
             </div>
-            <div>
-                <Button type='primary' onClick={() => {
-                    startSearch({
-                        keyword: searchValue,
-                        bTime: date[0] || null,
-                        eTime: date[1] || null,
-                        type
-                    })
-                }}>搜索</Button>
+            <div className={styles.action}>
+                <div className={styles.searchButton}>
+                    <Button type='primary' onClick={() => {
+                        startSearch({
+                            keyword: searchValue,
+                            bTime: date[0] || null,
+                            eTime: date[1] || null,
+                            type
+                        })
+                    }}>搜索</Button>
+                    <Button onClick={() => setCheckList(checkList.length === data.length ? [] : data)}>
+                        {checkList.length === data.length ? '取消全选' : '全选'}
+                    </Button>
+                </div>
+
+                <div>
+                    当前页：{listData.current}
+                    &nbsp;&nbsp;
+                    每页条数：{listData.pageSize}
+                    &nbsp;&nbsp;
+                    共 {listData.count} 条数据
+                </div>
             </div>
         </div>
         <div id='scrollableDiv' style={{
             padding: '0 0 24px 24px',
-            maxHeight: 'calc(100vh - 160px)',
+            maxHeight: `calc(100vh - 160px - ${checkList.length > 0 ? 56 : 0}px)`,
             overflow: 'auto',
             marginTop: 16
         }}>
@@ -387,79 +487,68 @@ const GetData = () => {
                             </Button>]}
                         >
                             <List.Item.Meta
-                                description={<div style={{color: '#000'}}>
-                                    <div className={styles.item}>
-                                        <div className={styles.label}>病案号：</div>
-                                        <div>
-                                            <SearchValueFormat
-                                                searchValue={searchValue}
-                                                label={item.medicalRecordNumber}
-                                            /></div>
+                                description={<div className={styles.content}>
+                                    <div>
+                                        <Checkbox
+                                            checked={checkList.map(item => item.patientId).find(patientId => patientId === item.patientId)}
+                                            onChange={({target: {checked}}) => {
+                                                setCheckList(checked ? [...checkList, item] : checkList.filter(checkItem => checkItem.patientId !== item.patientId))
+                                            }}
+                                        />
                                     </div>
-                                    <div className={styles.item}>
-                                        <div className={styles.label}>病人Id：</div>
-                                        <div>
-                                            <SearchValueFormat
-                                                searchValue={searchValue}
-                                                label={item.patientId}
-                                            />
+                                    <div style={{color: '#000'}}>
+                                        <div className={styles.item}>
+                                            <div className={styles.label}>病案号：</div>
+                                            <div>
+                                                <SearchValueFormat
+                                                    searchValue={searchValue}
+                                                    label={item.medicalRecordNumber}
+                                                />
+                                            </div>
+                                            <div style={{width: 12}} />
+                                            <div className={styles.item}>
+                                                <div className={styles.label}>病人Id：</div>
+                                                <div>
+                                                    <SearchValueFormat
+                                                        searchValue={searchValue}
+                                                        label={item.patientId}
+                                                    />
+                                                </div>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div className={styles.item}>
-                                        <div className={styles.label}>姓名：</div>
-                                        <div>
-                                            <SearchValueFormat
-                                                searchValue={searchValue}
-                                                label={item.name}
-                                            />
+                                        <div className={styles.item}>
+                                            <div className={styles.label}>姓名：</div>
+                                            <div>
+                                                <SearchValueFormat
+                                                    searchValue={searchValue}
+                                                    label={item.name}
+                                                />
+                                            </div>
+                                            <div style={{width: 12}} />
+                                            <div className={styles.label}>手机号：</div>
+                                            <div>
+                                                <SearchValueFormat
+                                                    searchValue={searchValue}
+                                                    label={item.phone}
+                                                />
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div className={styles.item}>
-                                        <div className={styles.label}>身份证号：</div>
-                                        <div>
-                                            <SearchValueFormat
-                                                searchValue={searchValue}
-                                                label={item.idCard}
-                                            />
+                                        <div className={styles.item}>
+                                            <div className={styles.label}>入院时间：</div>
+                                            <div>
+                                                {item.hospitalizationDate || '-'}
+                                            </div>
+                                            <div style={{width: 12}} />
+                                            <div className={styles.label}>出院时间：</div>
+                                            <div>
+                                                {item.leaveDate || '-'}
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div className={styles.item}>
-                                        <div className={styles.label}>手机号：</div>
-                                        <div>
-                                            <SearchValueFormat
-                                                searchValue={searchValue}
-                                                label={item.phone}
-                                            />
-                                        </div>
-                                    </div>
-                                    <div className={styles.item}>
-                                        <div className={styles.label}>联系人手机号：</div>
-                                        <div>
-                                            <SearchValueFormat
-                                                searchValue={searchValue}
-                                                label={item.contactPhone}
-                                            />
-                                        </div>
-                                    </div>
-                                    <div className={styles.item}>
-                                        <div className={styles.label}>单位电话：</div>
-                                        <div>
-                                            <SearchValueFormat
-                                                searchValue={searchValue}
-                                                label={item.workPhone}
-                                            />
-                                        </div>
-                                    </div>
-                                    <div className={styles.item}>
-                                        <div className={styles.label}>入院时间：</div>
-                                        <div>
-                                            {item.hospitalizationDate || '-'}
-                                        </div>
-                                    </div>
-                                    <div className={styles.item}>
-                                        <div className={styles.label}>出院时间：</div>
-                                        <div>
-                                            {item.leaveDate || '-'}
+                                        <div className={styles.item}>
+                                            <div className={styles.label}>填报次数：</div>
+                                            <div>
+                                                {item.count || 0}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>}
@@ -469,6 +558,90 @@ const GetData = () => {
                 />
             </InfiniteScroll>
         </div>
+        <div className={styles.footer} hidden={checkList.length === 0}>
+            <div style={{flexGrow: 1}}>
+                已选中 <span className={styles.number}>{checkList.length}</span> 个
+            </div>
+            <Button type='primary' onClick={() => {
+                window.batchAdd = {
+                    errors: [],
+                    loading: false,
+                    index: 0,
+                    list: checkList,
+                    end: checkList.length === 1
+                }
+                setBatchDone(false)
+                setOpen(true)
+            }}>批量保存</Button>
+        </div>
+
+        <Modal
+            destroyOnClose={true}
+            onCancel={() => setOpen(false)}
+            title={batchDone ? '批量保存完成' : batchAddTitle()}
+            maskClosable={false}
+            open={open}
+            footer={[
+                <Button key={0} onClick={() => {
+                    setOpen(false)
+                }}>取消</Button>,
+                <Button
+                    hidden={batchDone}
+                    key={1}
+                    type='primary'
+                    loading={window.batchAdd && window.batchAdd.loading}
+                    onClick={() => {
+                        window.batchAdd = {
+                            ...window.batchAdd,
+                            loading: true
+                        }
+                        createHealth(checkList[0], 0)
+                    }}>
+                    {window.batchAdd && window.batchAdd.loading ? '正在批量保存中' : '批量保存'}
+                </Button>
+            ]}
+        >
+            {(window.batchAdd && window.batchAdd.loading) ?
+                <div style={{textAlign: 'center'}}>
+                    <Progress
+                        type="circle"
+                        percent={((window.batchAdd.index) / (window.batchAdd.list.length)) * 100}
+                        format={(percent) => `${window.batchAdd.index} / ${window.batchAdd.list.length}`}
+                    />
+                </div>
+                :
+                <div style={{maxHeight: '50vh', overflow: 'auto'}}>
+                    <List
+                        size="small"
+                        dataSource={checkList}
+                        renderItem={(item, index) => {
+                            return <List.Item
+                                key={index}
+                                extra={(window.batchAdd && window.batchAdd.index) > index &&
+                                (typeof (window.batchAdd.errors || []).find(item => item === index) === "number" ?
+                                        <CloseCircleOutlined style={{color: 'red'}} /> :
+                                        <CheckCircleOutlined style={{color: 'green'}} />
+                                )}
+                            >
+                                <div className={styles.checkedList}>
+                                    <div className={styles.item}>
+                                        <div className={styles.label}>病案号：</div>
+                                        <div>
+                                            {item.medicalRecordNumber}
+                                        </div>
+                                    </div>
+                                    <div className={styles.item}>
+                                        <div className={styles.label}>姓名：</div>
+                                        <div>
+                                            {item.name}
+                                        </div>
+                                    </div>
+                                </div>
+                            </List.Item>
+                        }}
+                    />
+                </div>}
+        </Modal>
     </div>
 };
 

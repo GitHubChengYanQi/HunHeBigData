@@ -9,11 +9,12 @@
     "start": "npm run dev"
   },
   "dependencies": {
+    "@ant-design/icons": "^5.0.1",
+    "MES-Apis": "^0.2.15",
     "ahooks": "^2.9.1",
     "antd": "4.24.1",
     "axios": "^0.27.2",
     "js-cookie": "^3.0.1",
-    "MES-Apis": "^0.2.15",
     "moment": "^2.29.4",
     "react": "^16.14.0",
     "react-dom": "^16.14.0",

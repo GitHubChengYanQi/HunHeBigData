@@ -1,9 +1,39 @@
+
+.content {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
 .item {
   display: flex;
   align-items: center;
 
   .label {
     color: rgba(0, 0, 0, 0.45);
+  }
+}
+
+.action {
+  display: flex;
+  align-items: center;
+
+  .searchButton {
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+}
+
+.checkedList {
+  display: flex;
+  align-items: center;
+  width: 100%;
+
+  .item {
+    flex-grow: 1;
+    width: 50%;
   }
 }
 
@@ -27,5 +57,22 @@
       width: 70px;
       min-width: 70px;
     }
+  }
+}
+
+.footer {
+  position: fixed;
+  bottom: 0;
+  padding: 12px 24px;
+  width: 100%;
+  background-color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+
+  .number {
+    color: #257bde;
+    font-size: 20px;
   }
 }
